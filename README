@@ -1,0 +1,97 @@
+= github_beacon
+
+== DESCRIPTION
+
+This is a Github beacon for integration with Lighthouse.
+
+Github's built-in Lighthouse integration has a flaw that
+comes up when you have more than one person making commits: the
+changesets that appear in Lighthouse, and any ticket updates made by
+commit messages, are all credited to a single person.
+
+github_beacon allows you to specify a different Lighthouse API token
+for each Lighthouse user. So changesets and ticket updates are in
+Lighthouse are credited to whoever actually made the commits. It also
+supports a default token to be used in case changes are committed by
+someone who is not a member of your Lighthouse project.
+
+== INSTALL:
+
+github_beacon is a Sinatra application <http://sinatrarb.com/>. Set it
+running like any other Sinatra application at a location that is
+publicly accessible.
+
+== USAGE:
+
+Lighthouse credentials are defined in a file called credentials.yaml,
+that should be placed in the directory from which github_beacon is
+run. A credentials.yaml.example file is provided as a template for the
+expected format. Here is an excerpt:
+
+  http://github.com/username/project:
+    account: http://my_subdomain.lighthouseapp.com
+    project: Lighthouse project number
+    default_token: Lighthouse API token to use if user token is not found (optional)
+    users:
+      alice@crypt.ru: Alice's Lighthouse API token
+      bob@gmail.com: Bob's Lighthouse API token
+    secret: params[:secret] must match this value for request to succeed (optional)
+
+You can set up integration between any number of Github and Lighthouse
+projects by including multiple stanzas using the same format as the
+one above.
+
+The default_token value is used if a commit was made by a user who's
+token could not be found in the credentials.yaml file. This is useful
+if you have people making commits who are not members of your
+Lighthouse project. It is optional, so you can leave it out if you
+don't want to allow that.
+
+The secret value is provided for security. If a secret is provided,
+github_beacon will refuse any request that does not include the same
+secret as a parameter. The secret value is set separately for each
+Github project for additional security.
+
+When the application is deployed and the credentials are set up, set
+the appropriate Post-Receive URL in the Admin section of your Github
+project. Make sure to include the secret as a query string if needed.
+
+An example Post-Receive URL would be:
+http://github-beacon.sitr.us/?secret=sewreafparibafmuowryntik7
+
+== REFERENCES:
+
+Portions of github_beacon are adapted from the instructions at:
+http://lighthouseapp.com/help/setting-up-subversion-integration
+
+The Lighthouse changeset API is specified at:
+http://lighthouseapp.com/api/changesets
+
+Information about github's post-receive-hooks and how to use them can
+be found at:
+http://github.com/guides/post-receive-hooks
+
+== LICENSE:
+
+(The MIT License)
+
+Copyright (c) 2008 Jesse Hallett <hallettj@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
