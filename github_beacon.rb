@@ -32,28 +32,29 @@ post '/' do
   
   # Push each changeset to Lighthouse separately so that we can use
   # different API tokens if commits were made by different users.
-  push['commits'].each do |commit, details|
+  push['commits'].each do |commit|
     
-    commit_author       = details['author']['name']
-    commit_author_email = details['author']['email']
-    commit_message      = [details['message'], details['url']].join("\n\n")
-    commit_time         = details['timestamp']
+    id           = commit['id']
+    author       = commit['author']['name']
+    author_email = commit['author']['email']
+    message      = [commit['message'], commit['url']].join("\n\n")
+    timestamp    = commit['timestamp']
 
-    commit_changes = (details['added'].collect { |a| ['A', a] } + 
-      details['removed'].collect { |r| ['D', r] } + 
-      details['modified'].collect { |m| ['U', m] }).to_yaml
-    
+    changes = (commit['added'].collect { |a| ['A', a] } + 
+      commit['removed'].collect { |r| ['D', r] } + 
+      commit['modified'].collect { |m| ['U', m] }).to_yaml
+
     changeset_xml = <<-END_XML
 <changeset>
-  <title>#{CGI.escapeHTML("Changeset [#{commit}] by #{commit_author}")}</title>
-  <body>#{CGI.escapeHTML(commit_message)}</body>
-  <changes>#{CGI.escapeHTML(commit_changes)}</changes>
-  <revision>#{CGI.escapeHTML(commit)}</revision>
-  <changed-at type="datetime">#{CGI.escapeHTML(commit_time)}</changed-at>
+  <title>#{CGI.escapeHTML("Changeset [#{id}] by #{author}")}</title>
+  <body>#{CGI.escapeHTML(message)}</body>
+  <changes>#{CGI.escapeHTML(changes)}</changes>
+  <revision>#{id}</revision>
+  <changed-at type="datetime">#{timestamp}</changed-at>
 </changeset>
 END_XML
     
-    token = credentials['users'] && credentials['users'][commit_author_email] || credentials['default_token']
+    token = credentials['users'] && credentials['users'][author_email] || credentials['default_token']
     raise "No token found." unless token
 
     url = URI.parse('%s/projects/%d/changesets.xml' % [credentials['account'], credentials['project']])

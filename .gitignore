@@ -2,3 +2,4 @@ credentials.yaml
 test_*
 thin.*
 Capfile
+config/*
